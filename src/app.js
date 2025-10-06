@@ -1,21 +1,25 @@
 const express = require("express");
-
 const app = express();
 
-app.use("/hello" , (req , res) => {
-    res.send("Hello!! Hello!! Hello!");
-})
-
-app.use("/test" , (req , res) =>{
-    res.send("Hello from the server")
-})
-
-app.use("/" , (req , res) =>{
-    res.send("Namaste Himanshu!")
+app.get("/user" , (req , res) =>{
+    res.send("Hello Himanshu!!!");
 });
 
+app.post("/user" , (req , res) =>{
+    res.send("Got a post request !!!")
+})
+app.put("/user" , (req , res) =>{
+    res.send("Got a put request at /user !!!")
+})
+app.patch("/user" , (req , res) =>{
+    res.send("Got a patch request at /user !!!")
+})
+app.delete("/user" , (req , res) =>{
+    res.send("Got a delete request at /user !!!")
+})
 
-app.listen(7777 , () =>{
-    console.log("The server is listening on 7777 ports successfully!!!");
+
+
+app.listen(7777, () => {
+    console.log("The server is listening on port 7777 successfully!!!");
 });
-
