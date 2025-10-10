@@ -1,24 +1,32 @@
-const adminAuth =  (req , res , next) =>{
-    let token = "hm5056";  // Simulated auth token for protected routes
-    if( token !== "hm5056"){
-        res.status(401).send("Permission denied. You are not authorized to access this resource.");
-    } else{
-        next();
+const adminAuth = (req , res , next) => {
+    const token = "hmawari@123";
+    const isAuthorised = token === "hmawari@123";
+
+    console.log("Admin Authorization will apply that routes!!")
+
+    if(!isAuthorised) {
+        res.status(402).send("Permission denied!!")
+    } else {
+        next()
+        console.log("PASSED You have access these routes feel free to move forward!!")
     }
 };
-
-const userAuth = (req , res , next) =>{
+const userAuth = (req , res , next) => {
+    const token = "hmawari@123";
+    const isAuthorised = token === "hmawari@123";
+    
     if( req.path === "/login") {
         return next()
     }
-    let token = "himanshu@123";
-    if( token !== "himanshu@123"){
-        res.status(401).send("Permission denied. You are not authorized to acess this resource.")
+
+    console.log("User Authorization will apply that routes!!")
+
+    if(!isAuthorised) {
+        res.status(402).send("Permission denied!!")
     } else {
-        console.log("User Authentication Apply")
         next()
+        console.log("PASSED You have access these routes feel free to move forward!!")
     }
 };
 
-
-module.exports = { adminAuth , userAuth };
+module.exports = { adminAuth , userAuth }
