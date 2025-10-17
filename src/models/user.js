@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
-const validator = require("validator")
+const validator = require("validator");
+const { default: isURL } = require("validator/lib/isURL");
 
 const userSchema = mongoose.Schema({
     username: {
@@ -18,14 +19,15 @@ const userSchema = mongoose.Schema({
         minLength: [4, "last name must be at least 4 characters"],
         maxLength: [30, "last name cannot exceed 30 characters"]
     },
-    emailId: {
+    email: {
         type: String,
         required: true,
         unique: true,
         trim: true,
         lowercase: true,
-        validate(value){
-            if(!validator.isEmail(value)){
+        validate(value) {
+            const isVaildEmail = validator.isEmail(value);
+            if (!isVaildEmail) {
                 throw new Error("Invalid email address")
             }
         }
@@ -33,8 +35,9 @@ const userSchema = mongoose.Schema({
     password: {
         type: String,
         required: true,
-        validate(value){
-            if(!validator.isStrongPassword(value)){
+        validate(value) {
+            const isStrongPassword = validator.isStrongPassword(value)
+            if (!isStrongPassword) {
                 throw new Error("Make a strong password")
             }
         }
@@ -43,10 +46,15 @@ const userSchema = mongoose.Schema({
         type: Number,
         min: [18, "You must be at least 18 yrs old"]
     },
-    photoUrl: {
+    profilePicture: {
         type: String,
-        default:
-            "https://cdn.vectorstock.com/i/1000v/96/77/blank-grey-scale-profile-picture-placeholder-vector-51589677.avif"
+        default: "https://cdn.vectorstock.com/i/1000v/96/77/blank-grey-scale-profile-picture-placeholder-vector-51589677.avif",
+        validate(value) {
+            const isValidUrl = isURL(value);
+            if (!isValidUrl) {
+                throw new Error("Invalid url")
+            }
+        }
     },
     bio: {
         type: String,
