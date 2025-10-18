@@ -1,12 +1,11 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
-const { default: isURL } = require("validator/lib/isURL");
-
+    
 const userSchema = mongoose.Schema({
     username: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
     },
     firstName: {
         type: String,
@@ -21,6 +20,7 @@ const userSchema = mongoose.Schema({
     },
     email: {
         type: String,
+        index : true,
         required: true,
         unique: true,
         trim: true,
@@ -50,7 +50,7 @@ const userSchema = mongoose.Schema({
         type: String,
         default: "https://cdn.vectorstock.com/i/1000v/96/77/blank-grey-scale-profile-picture-placeholder-vector-51589677.avif",
         validate(value) {
-            const isValidUrl = isURL(value);
+            const isValidUrl = validator.isURL(value);
             if (!isValidUrl) {
                 throw new Error("Invalid url")
             }
