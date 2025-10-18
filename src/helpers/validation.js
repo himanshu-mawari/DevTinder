@@ -5,7 +5,7 @@ const validateSignUpInput = (req) => {
 
     if (!firstName) {
         throw new Error("First name is required");
-    } else if (firstName.length < 4 && firstName.length > 30) {
+    } else if (firstName.length < 4 || firstName.length > 30) {
         throw new Error("First name must be 4-30 characters");
     } else if (!validator.isAlpha(firstName) && !validator.isAlpha(lastName)) {
         throw new Error("first name and last name must be contains only alphabets")

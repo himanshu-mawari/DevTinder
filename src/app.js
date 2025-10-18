@@ -2,6 +2,7 @@ const express = require("express");
 const connectDb = require("./config/database");
 const User = require("./models/user");
 const validateSignUpInput = require("./helpers/validation")
+const bcrypt = require("bcrypt")
 const app = express();
 const ports = 3000;
 
@@ -9,17 +10,28 @@ app.use(express.json());
 
 // dynamic post api route for signup
 app.post("/signup", async (req, res) => {
-    
-    // Validation of user input
-     validateSignUpInput(req);
 
     try {
-        const data = req.body;
-        const users = new User(data)
+        // Validation of user input
+        validateSignUpInput(req);
+
+        const { firstName, lastName, email, password } = req.body
+
+        // Encrypted the password
+        const passwordHash = await bcrypt.hash(password, 10);
+    
+        const users = new User({
+            username: firstName + Math.random().toString(36).substring(2, 5),
+            firstName,
+            lastName,
+            email,
+            password: passwordHash
+        })
+
         await users.save();
         res.send("User added successfullly");
     } catch (err) {
-        res.status(402).send("Error occur : " + err.message)
+        res.status(400).send("Error occur : " + err.message)
     }
 });
 
@@ -91,10 +103,10 @@ app.patch("/user/:userId", async (req, res) => {
         )
 
         if (!isUpdateAllowed) {
-           res.status(400).send("Invalid updates! Sorry, you can't update certain fields")
+            res.status(400).send("Invalid updates! Sorry, you can't update certain fields")
         }
-    
-        await User.findByIdAndUpdate(userId, data , { runValidation : true});
+
+        await User.findByIdAndUpdate(userId, data, { runValidation: true });
         res.send("User updated successfully");
     } catch (err) {
         res.status(400).send("Error occur: " + err.message);
