@@ -17,4 +17,4 @@ const validateSignUpInput = (req) => {
 };
 
 
-module.exports = validateSignUpInput ;
+module.exports = validateSignUpInput;

@@ -1,7 +1,7 @@
 const express = require("express");
 const connectDb = require("./config/database");
 const User = require("./models/user");
-const validateSignUpInput = require("./helpers/validation")
+const { validateSignUpInput } = require("./helpers/validation");
 const bcrypt = require("bcrypt")
 const app = express();
 const ports = 3000;
@@ -19,7 +19,7 @@ app.post("/signup", async (req, res) => {
 
         // Encrypted the password
         const passwordHash = await bcrypt.hash(password, 10);
-    
+
         const users = new User({
             username: firstName + Math.random().toString(36).substring(2, 5),
             firstName,
@@ -35,12 +35,40 @@ app.post("/signup", async (req, res) => {
     }
 });
 
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email })
+
+        if (!user) {
+            res.status(400).send("Invalid credentials!")
+        };
+
+        const isCorrectPassword = await bcrypt.compare(password, user.password);
+
+        if (!isCorrectPassword) {
+            res.status(400).send("Invalid credentials!")
+        } else {
+            res.send("login Successful!");
+        }
+
+    } catch (err) {
+        res.send("Error occur : " + err.message);
+    }
+});
+
 // API Get/feed - to get all user
 app.get("/user", async (req, res) => {
     try {
         const users = await User.find({});
-        if (!users) res.status(401).send("No user found");
-        else res.send(users);
+
+        if (users.length === 0) {
+            res.status(401).send("No user found");
+        }
+        else {
+            res.send(users);
+        }
     } catch (err) {
         console.log("Error occur : " + err.message)
     }
@@ -51,8 +79,12 @@ app.get("/user/id", async (req, res) => {
     const userId = req.body.userId;
     try {
         const users = await User.findById(userId);
-        if (!users) res.status(402).send("No user found");
-        else res.send(users);
+        if (users.length === 0) {
+            res.status(402).send("No user found");
+        }
+        else {
+            res.send(users);
+        }
     } catch (err) {
         res.status(402).send("Error occur : " + err.message);
     }
@@ -62,9 +94,13 @@ app.get("/user/id", async (req, res) => {
 app.get("/user/email", async (req, res) => {
     try {
         const emailId = req.body.emailId;
-        const user = await User.find({ emailId: emailId });
-        if (!user) res.status(401).send("No user found wiht the provided email!");
-        else res.send(user);
+        const users = await User.find({ emailId: emailId });
+        if (users.length === 0) {
+            res.status(401).send("No user found wiht the provided email!");
+        }
+        else {
+            res.send(users);
+        }
     } catch (err) {
         res.status(402).send("Error occur :" + err.message);
     }
@@ -74,8 +110,14 @@ app.get("/user/email", async (req, res) => {
 app.delete("/user", async (req, res) => {
     try {
         const userId = req.body.userId;
-        await User.findByIdAndDelete(userId);
-        res.send("User deleted successfully");
+        const users = await User.findByIdAndDelete(userId);
+
+        if (!users) {
+            res.status(400).send("User not found");
+        } else {
+            res.send("User deleted successfully");
+
+        }
     } catch (err) {
         res.status(402).send("Error occur :" + err.message);
     }
@@ -115,14 +157,12 @@ app.patch("/user/:userId", async (req, res) => {
 
 
 connectDb().then(() => {
-    console.log("Database connection established!!");
+    console.log("Database connected successfully");
 
     app.listen(ports, () => {
         console.log(`The server is listening on port ${ports} successfully!!!`);
     });
 
 }).catch(err => {
-    console.error("Database cannot established!!!" + err.message);
+    console.error("Error:" + err.message);
 });
-
-
