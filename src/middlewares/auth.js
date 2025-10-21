@@ -1,32 +1,36 @@
-const adminAuth = (req , res , next) => {
-    const token = "hmawari@123";
-    const isAuthorised = token === "hmawari@123";
+const jwt = require("jsonwebtoken");
+const User = require("../models/user")
 
-    console.log("Admin Authorization will apply that routes!!")
 
-    if(!isAuthorised) {
-        res.status(402).send("Permission denied!!")
-    } else {
-        next()
-        console.log("PASSED You have access these routes feel free to move forward!!")
+
+const userAuth = async (req , res , next) => {
+  try{
+
+      // Read the token from the req cookies
+      
+      const cookie = req.cookies;
+      const { token } = cookie;
+      if(!token){
+        throw new Error("Token not found")
+      }
+      
+      // validate the token
+      const privateKey = "DevTinder@2108#&"
+      
+      const decodedToken = await jwt.verify( token , privateKey);
+      const { _id } = decodedToken;
+            
+      // Find the user
+      const user =await User.findById(_id);
+      if(!user){
+        throw new Error("User not found")
+      }
+
+      req.user = user;
+      next()
+    } catch(err){
+        res.status(401).send("Error :" + err.message);
     }
-};
-const userAuth = (req , res , next) => {
-    const token = "hmawari@123";
-    const isAuthorised = token === "hmawari@123";
-    
-    if( req.path === "/login") {
-        return next()
-    }
+}
 
-    console.log("User Authorization will apply that routes!!")
-
-    if(!isAuthorised) {
-        res.status(402).send("Permission denied!!")
-    } else {
-        next()
-        console.log("PASSED You have access these routes feel free to move forward!!")
-    }
-};
-
-module.exports = { adminAuth , userAuth }
+module.exports = { userAuth };
