@@ -1,0 +1,59 @@
+const express = require("express");
+const bcrypt = require("bcrypt");
+const User = require("../models/user")
+const validateSignUpInput = require("../helpers/validation");
+const authRouter = express.Router();
+
+authRouter.post("/signup", async (req, res) => {
+    try {
+        // Validation of user input
+        validateSignUpInput(req);
+
+        const { firstName, lastName, email, password } = req.body
+
+        // Encrypted the password
+        const passwordHash = await bcrypt.hash(password, 10);
+
+        const users = new User({
+            username: firstName + Math.random().toString(36).substring(2, 5),
+            firstName,
+            lastName,
+            email,
+            password: passwordHash
+        })
+
+        await users.save();
+        res.send("User added successfullly");
+    } catch (err) {
+        res.status(400).send("Error occur : " + err.message)
+    }
+});
+
+authRouter.post("/login", async (req, res) => {
+    try {
+ 
+        const { email, password } = req.body;
+
+        const user = await User.findOne({ email });
+
+        if (!user) {
+            res.status(400).send("Invalid credentials!")
+        };
+
+        const isCorrectPassword = await user.verifyPassword(user , password)
+
+        if (!isCorrectPassword) {
+            res.status(400).send("Invalid credentials!")
+        } else {
+            const token = await user.getJWT();
+            await res.cookie("token", token, { expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) });
+            res.send("login Successful!");
+        }
+
+    } catch (err) {
+        res.send("Error occur : " + err.message);
+    }
+});
+
+
+module.exports = authRouter;

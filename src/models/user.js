@@ -29,7 +29,7 @@ const userSchema = mongoose.Schema({
         trim: true,
         lowercase: true,
         validate(value) {
-            const isVaildEmail = validator.isEmail(value);
+            const isVaildEmail = validator.isEmail(value);  
             if (!isVaildEmail) {
                 throw new Error("Invalid email address")
             }
@@ -83,33 +83,31 @@ const userSchema = mongoose.Schema({
 
 }, { timestamps: true });
 
-userSchema.methods.getJWT = async function ( req , res ) {
-    try{
+userSchema.methods.getJWT = async function (req, res) {
+    try {
         const user = this;
-        console.log(user)
-        
+    
         const privateKey = "DevTinder@2108#&"
-      const token = await jwt.sign({ _id: user._id }, privateKey, { expiresIn: "1d" });
-      
-      return token;
-    } catch(err) {
+        const token = await jwt.sign({ _id: user._id }, privateKey, { expiresIn: "1d" });
+
+        return token;
+    } catch (err) {
         res.status(400).send("Error : " + err.message);
     }
-    
+
 };
 
-userSchema.methods.verifyPassword = async function (user , password){
-   try{
-       const hashPassword = user.password;
-       const passwordInputByUser = password;
-       const isCorrectPassword = await bcrypt.compare(passwordInputByUser, hashPassword);
-       return isCorrectPassword;
-    } catch(err) {
+userSchema.methods.verifyPassword = async function (user, password) {
+    try {
+        const hashPassword = user.password;
+        const passwordInputByUser = password;
+        const isCorrectPassword = await bcrypt.compare(passwordInputByUser, hashPassword);
+        return isCorrectPassword;
+    } catch (err) {
         throw new Error("Error : " + err.message);
     }
 }
 
 
 const User = mongoose.model("User", userSchema);
-
 module.exports = User;
