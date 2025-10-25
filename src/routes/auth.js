@@ -1,13 +1,13 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const User = require("../models/user")
-const validateSignUpInput = require("../helpers/validation");
+const { verifySignInput } = require("../helpers/validation");
 const authRouter = express.Router();
 
 authRouter.post("/signup", async (req, res) => {
     try {
         // Validation of user input
-        validateSignUpInput(req);
+        verifySignInput(req);
 
         const { firstName, lastName, email, password } = req.body
 
@@ -25,7 +25,7 @@ authRouter.post("/signup", async (req, res) => {
         await users.save();
         res.send("User added successfullly");
     } catch (err) {
-        res.status(400).send("Error occur : " + err.message)
+        res.status(400).send("Error registering user : " + err.message)
     }
 });
 
@@ -51,9 +51,17 @@ authRouter.post("/login", async (req, res) => {
         }
 
     } catch (err) {
-        res.send("Error occur : " + err.message);
+        res.send("Error logging in  : " + err.message);
     }
 });
 
+authRouter.post("/logout" , async(req , res) => {
+    try{
+        await res.clearCookie("token");
+        res.send("logout successfully!");
+    } catch(err) {
+        res.status(400).send("Error logging out : " + err.message);
+    }
+});
 
 module.exports = authRouter;
