@@ -52,7 +52,7 @@ profileRouter.patch("/profile/reset-password", userAuth, async (req, res) => {
     } catch (err) {
         res.status(400).send("Error changing password : " + err.message);
     }
+});
 
-})
 
 module.exports = profileRouter; 
