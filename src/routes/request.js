@@ -41,19 +41,21 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
 
         const connectionRequest = new ConnectionRequest({
             fromUserId: loggedinUserId,
-            toUserId:  userId,
-            status : status
+            toUserId: userId,
+            status: status
         });
-        
+
         await connectionRequest.save();
-        
+
         res.json({
             message: "Connection request sent successfully",
-            data : connectionRequest
+            data: connectionRequest
         });
 
     } catch (err) {
-        res.status(400).send("Error sending connection request :" + err.message);
+        res.status(400).json({
+            message: "Error sending connection request :" + err.message
+        });
     }
 });
 

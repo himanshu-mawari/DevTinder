@@ -9,7 +9,7 @@ authRouter.post("/signup", async (req, res) => {
         // Validation of user input
         verifySignInput(req);
 
-        const { firstName, lastName, email, password } = req.body
+        const { firstName, lastName, email, password } = req.body;
 
         // Encrypted the password
         const passwordHash = await bcrypt.hash(password, 10);
@@ -20,18 +20,20 @@ authRouter.post("/signup", async (req, res) => {
             lastName,
             email,
             password: passwordHash
-        })
+        });
 
         await users.save();
         res.send("User added successfullly");
     } catch (err) {
-        res.status(400).send("Error registering user : " + err.message)
+        res.status(400).json({
+            message: "Error signing up : " + err.message
+        })
     }
 });
 
 authRouter.post("/login", async (req, res) => {
     try {
- 
+
         const { email, password } = req.body;
 
         const user = await User.findOne({ email });
@@ -40,7 +42,7 @@ authRouter.post("/login", async (req, res) => {
             res.status(400).send("Invalid credentials!")
         };
 
-        const isCorrectPassword = await user.verifyPassword(user , password)
+        const isCorrectPassword = await user.verifyPassword(user, password)
 
         if (!isCorrectPassword) {
             res.status(400).send("Invalid credentials!")
@@ -51,16 +53,21 @@ authRouter.post("/login", async (req, res) => {
         }
 
     } catch (err) {
-        res.send("Error logging in  : " + err.message);
+        res.status(400).json({
+            message: "Error logging in  : " + err.message
+        }
+        );
     }
 });
 
-authRouter.post("/logout" , async(req , res) => {
-    try{
+authRouter.post("/logout", async (req, res) => {
+    try {
         await res.clearCookie("token");
         res.send("logout successfully!");
-    } catch(err) {
-        res.status(400).send("Error logging out : " + err.message);
+    } catch (err) {
+        res.status(400).json({
+            message: "Error logging out : " + err.message
+        })
     }
 });
 
