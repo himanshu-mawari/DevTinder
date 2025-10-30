@@ -13,12 +13,14 @@ const connectionRequestSchema = new mongoose.Schema({
     status: {
         type: String,
         enum: {
-            values: ["ignored", "intrested", "accepted", "rejected"],
+            values: ["ignored", "interested", "accepted", "rejected"],
             message: "{VALUE} is not valid status"
         },
         required: true
     }
 }, { timestamps: true });
+
+connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 connectionRequestSchema.pre("save" , function(next){
     const connectionRequest = this;

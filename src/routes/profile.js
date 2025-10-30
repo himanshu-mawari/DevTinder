@@ -6,7 +6,7 @@ const { verifyProfileInput, verifyOldPassword } = require("../helpers/validation
 const profileRouter = express.Router();
 
 
-profileRouter.get("/profile/view", userAuth, async (req, res) => {
+profileRouter.get("/view", userAuth, async (req, res) => {
     try {
         res.send(req.user);
     } catch (err) {
@@ -16,7 +16,8 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     }
 });
 
-profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+
+profileRouter.patch("/edit", userAuth, async (req, res) => {
     try {
         verifyProfileInput(req);
 
@@ -36,7 +37,8 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     }
 });
 
-profileRouter.patch("/profile/reset-password", userAuth, async (req, res) => {
+
+profileRouter.patch("/reset-password", userAuth, async (req, res) => {
     try {
 
         const loggedInUser = req.user;
@@ -55,7 +57,8 @@ profileRouter.patch("/profile/reset-password", userAuth, async (req, res) => {
         })
     } catch (err) {
         res.status(400).json({
-            message : "Error changing password : " + err.message
+
+            message: "Error changing password : " + err.message
         });
     }
 });

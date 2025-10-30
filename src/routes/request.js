@@ -14,7 +14,7 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
         const allowedStatus = ["ignored", "interested"];
         const isValidStatus = allowedStatus.includes(status);
         if (!isValidStatus) {
-            res.status(404).json({
+            return res.status(404).json({
                 message: "Invalid status value"
             })
         };
@@ -22,7 +22,7 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
         // check if it toUserId exist in DB
         const existingUser = await User.findById(userId);
         if (!existingUser) {
-            res.status(404).json({
+            return res.status(404).json({
                 message: "User not found"
             })
         };
@@ -34,7 +34,7 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
             ]
         });
         if (existingRequest) {
-            res.status(404).json({
+            return res.status(404).json({
                 message: "Connection request already exist"
             })
         };
@@ -56,6 +56,49 @@ requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) =
         res.status(400).json({
             message: "Error sending connection request :" + err.message
         });
+    }
+});
+
+requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
+    try {
+
+        const { status , requestId } = req.params
+        const loggedinUserId = req.user._id
+
+        const allowedStatus = ["accepted", "rejected"];
+        const isValidStatus = allowedStatus.includes(status);
+        if (!isValidStatus) {
+            console.log("Im still printing");
+            return res.status(400).json({
+                message: "Invalid status value"
+            })
+        }
+        console.log("Im still printing second time");
+
+        const connectionRequest = await ConnectionRequest.findOne({
+            _id : requestId,
+            toUserId : loggedinUserId,
+            status : "interested"
+        });
+        if(!connectionRequest){
+            return res.status(404).json({
+                message : "Connection request not found"
+            })
+        }
+
+        connectionRequest.status = status;
+
+        await connectionRequest.save();
+
+        res.json({
+            message : "Connection request reviewed successfully",
+            data : connectionRequest
+        })
+        
+    } catch (err) {
+        res.status(400).json({
+            message: "Error reviewing connection request : " + err.message
+        })
     }
 });
 

@@ -11,8 +11,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/" , authRouter);
-app.use("/" , profileRouter);
-app.use("/" , requestRouter);
+app.use("/profile" , profileRouter);
+app.use("/request" , requestRouter);
 
 
 
