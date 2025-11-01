@@ -1,15 +1,10 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/user")
-const express = require("express")
-const app = express();
-
-app.use(express.json())
 
 const userAuth = async (req, res, next) => {
   try {
 
     // Read the token from the req cookies
-
     const cookie = req.cookies;
     const { token } = cookie;
     if (!token) {
@@ -18,7 +13,6 @@ const userAuth = async (req, res, next) => {
 
     // validate the token
     const privateKey = "DevTinder@2108#&"
-
     const decodedToken = await jwt.verify(token, privateKey);
     const { _id } = decodedToken;
 
@@ -27,11 +21,11 @@ const userAuth = async (req, res, next) => {
     if (!user) {
       throw new Error("User not found")
     }
-    req.user = user;
 
+    req.user = user;
     next();
   } catch (err) {
-    res.status(401).send("Error :" + err.message);
+    res.status(401).send("Error : " + err.message);
   }
 }
 

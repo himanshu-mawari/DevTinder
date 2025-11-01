@@ -39,13 +39,13 @@ authRouter.post("/login", async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            res.status(400).send("Invalid credentials!")
+            return res.status(400).send("Invalid credentials!")
         };
 
         const isCorrectPassword = await user.verifyPassword(user, password)
 
         if (!isCorrectPassword) {
-            res.status(400).send("Invalid credentials!")
+            return res.status(400).send("Invalid credentials!")
         } else {
             const token = await user.getJWT();
             await res.cookie("token", token, { expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) });

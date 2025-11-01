@@ -1,9 +1,10 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const connectDb = require("./config/database");
-const authRouter = require("./routes/auth")
-const profileRouter = require("./routes/profile")
-const requestRouter = require("./routes/request")
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user")
 const app = express();
 const ports = 3000;
 
@@ -13,7 +14,7 @@ app.use(cookieParser());
 app.use("/" , authRouter);
 app.use("/profile" , profileRouter);
 app.use("/request" , requestRouter);
-
+app.use("/user" , userRouter)
 
 
 

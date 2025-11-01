@@ -65,16 +65,16 @@ requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
         const { status , requestId } = req.params
         const loggedinUserId = req.user._id
 
-        const allowedStatus = ["accepted", "rejected"];
+        // check if it status allowed
+        const allowedStatuses = ["accepted", "rejected"];
         const isValidStatus = allowedStatus.includes(status);
         if (!isValidStatus) {
-            console.log("Im still printing");
             return res.status(400).json({
                 message: "Invalid status value"
             })
         }
-        console.log("Im still printing second time");
 
+        // find the connection request
         const connectionRequest = await ConnectionRequest.findOne({
             _id : requestId,
             toUserId : loggedinUserId,
@@ -87,14 +87,12 @@ requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
         }
 
         connectionRequest.status = status;
-
         await connectionRequest.save();
 
         res.json({
             message : "Connection request reviewed successfully",
             data : connectionRequest
         })
-        
     } catch (err) {
         res.status(400).json({
             message: "Error reviewing connection request : " + err.message
