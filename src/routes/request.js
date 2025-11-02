@@ -4,7 +4,7 @@ const User = require("../models/user");
 const ConnectionRequest = require("../models/connectionRequest");
 const requestRouter = express.Router();
 
-requestRouter.post("/request/send/:status/:userId", userAuth, async (req, res) => {
+requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
     try {
 
         const { status, userId } = req.params;
@@ -67,7 +67,7 @@ requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
 
         // check if it status allowed
         const allowedStatuses = ["accepted", "rejected"];
-        const isValidStatus = allowedStatus.includes(status);
+        const isValidStatus = allowedStatuses.includes(status);
         if (!isValidStatus) {
             return res.status(400).json({
                 message: "Invalid status value"
