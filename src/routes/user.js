@@ -1,7 +1,6 @@
 const express = require("express");
 const userRouter = express.Router();
 
-
 const ConnectionRequest = require("../models/connectionRequest");
 const userAuth = require("../middlewares/auth");
 const User = require("../models/user")
@@ -64,39 +63,49 @@ userRouter.get("/connections", userAuth, async (req, res) => {
 });
 
 
-userRouter.get("/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth , async (req, res) => {
     try {
         const loggedinUserId = req.user._id;
+                
+        const page = parseInt(req.query.page) || 1;
+        let limit = parseInt(req.query.limit) || 10;
+        const skip = ( page - 1 ) * limit;
+        
+        limit = limit > 50 ? 50 : limit;     
 
         // find the all interacted user by loggedinuser
         const users = await ConnectionRequest.find({
             $or: [
                 { fromUserId: loggedinUserId },
-                { toUserId: loggedinUserId }
+                { toUserId: loggedinUserId }    
             ]
         });
-
+                
         // Storing which is hide from the loggedinuser feed
         const hideUserFromFeed = new Set();
         users.forEach(req => {
             hideUserFromFeed.add(req.fromUserId.toString());
             hideUserFromFeed.add(req.toUserId.toString());
         });
-
+        
         const feedUser = await User.find({
             $and: [
                 { _id: { $nin: Array.from(hideUserFromFeed) } },
                 { _id: { $ne: loggedinUserId } }
             ]
-        }).select(USER_SAFE_DATA);
-
+        }).select(USER_SAFE_DATA)
+        .skip(skip)
+        .limit(limit);
+        
         res.json({
             message : "Successfully fetched the user profiles",
             data : feedUser
         });
     } catch (err) {
-
+        res.status(400).json({
+            message : "Error providing the feed to user : " + err.message
+        })
     }
-});
+}); 
 
-module.exports = userRouter;
+module.exports = userRouter;  
