@@ -51,7 +51,7 @@ const userSchema = mongoose.Schema({
     },
     profilePicture: {
         type: String,
-        default: "https://cdn.vectorstock.com/i/1000v/96/77/blank-grey-scale-profile-picture-placeholder-vector-51589677.avif",
+        default: "https://img.freepik.com/premium-vector/profile-icon_838328-1033.jpg",
         validate(value) {
             const isValidUrl = validator.isURL(value);
             if (!isValidUrl) {

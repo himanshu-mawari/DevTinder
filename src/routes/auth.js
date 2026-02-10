@@ -48,7 +48,7 @@ authRouter.post("/login", async (req, res) => {
             return res.status(400).send("Invalid credentials!")
         } else {
             const token = await user.getJWT();
-            await res.cookie("token", token, { expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) });
+             await res.cookie("token", token, { expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000) });
             res.send(user);
         }
 
@@ -62,7 +62,7 @@ authRouter.post("/login", async (req, res) => {
 
 authRouter.post("/logout", async (req, res) => {
     try {
-        await res.clearCookie("token");
+        await res.clearCookie("token" , null , {expires: Date.now()});
         res.send("logout successfully!");
     } catch (err) {
         res.status(400).json({
