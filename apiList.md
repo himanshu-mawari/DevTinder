@@ -8,6 +8,7 @@
 -  GET /profile/view
 -  PATCH /profile/edit
 -  PATCH /profile/password
+-  PATCH /profile/remove/skill
 # requestRouter
 -  POST /request/send/:status/:userId
 -  POST /request/review/:status/:request_id

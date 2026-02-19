@@ -31,7 +31,6 @@ connectionRequestSchema.pre("save" , function(next){
     if(isSameId){
         throw new Error("You cannot send connection request to yourself")
     }
-
     next() 
 })
 
