@@ -29,7 +29,7 @@ authRouter.post("/signup", async (req, res) => {
     res.send(savedUser);
   } catch (err) {
     res.status(400).json({
-      message: "Error signing up : " + err.message,
+      message:  err.message,
     });
   }
 });
@@ -53,7 +53,10 @@ authRouter.post("/login", async (req, res) => {
       res.cookie("token", token, {
         expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
       });
-      res.send(user);
+      res.json({
+         message : "Logged in successfully",
+        data: user
+      });
     }
   } catch (err) {
     res.status(400).json({

@@ -9,7 +9,6 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
     const { status, userId } = req.params;
     const loggedinUserId = req.user._id;
 
-    // check if it status allowed
     const allowedStatus = ["ignored", "interested"];
     const isValidStatus = allowedStatus.includes(status);
     if (!isValidStatus) {
@@ -18,7 +17,6 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
       });
     }
 
-    // check if it toUserId exist in DB
     const existingUser = await User.findById(userId);
     if (!existingUser) {
       return res.status(404).json({
@@ -26,7 +24,6 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
       });
     }
 
-    // check if it connection request already exists
     const existingRequest = await ConnectionRequest.findOne({
       $or: [
         { fromUserId: loggedinUserId, toUserId: userId },
@@ -34,7 +31,7 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
       ],
     });
     if (existingRequest) {
-      return res.status(404).json({
+      return res.status(409).json({
         message: "Connection request already exist",
       });
     }
@@ -94,6 +91,35 @@ requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
   } catch (err) {
     res.status(400).json({
       message: "Error reviewing connection request : " + err.message,
+    });
+  }
+});
+
+requestRouter.delete("/connection/:userId", userAuth, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const loggedInUserId = req.user._id;
+
+    const removeConnection = await ConnectionRequest.findOneAndDelete({
+      $or: [
+        { fromUserId: userId, toUserId: loggedInUserId },
+        { fromUserId: loggedInUserId, toUserId: userId },
+      ],
+      status: "accepted",
+    });
+
+    if (!removeConnection) {
+      return res.status(404).json({
+        message: "Connection does not exist",
+      });
+    }
+
+    res.json({
+      message: "Connection deleted successfully",
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.message,
     });
   }
 });

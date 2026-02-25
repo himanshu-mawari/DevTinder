@@ -13,7 +13,7 @@ profileRouter.get("/view", userAuth, async (req, res) => {
     res.send(req.user);
   } catch (err) {
     res.status(400).json({
-      message: "Error fetching profile :" + err.message,
+      message: err.message,
     });
   }
 });
@@ -33,7 +33,7 @@ profileRouter.patch("/edit", userAuth, async (req, res) => {
     });
   } catch (err) {
     res.status(400).json({
-      message: "Error updating profile :" + err.message,
+      message: err.message,
     });
   }
 });
@@ -52,24 +52,16 @@ profileRouter.patch("/reset-password", userAuth, async (req, res) => {
 
     res.json({
       message: "Password updated successfully",
-      data: loggedInUser,
+      
     });
   } catch (err) {
-    res.status(400).json({
-      message: "Error changing password : " + err.message,
-    });
+     res.status(400).json({
+      message : err.message
+     })
   }
 });
 
 profileRouter.patch("/remove/skill", userAuth, async (req, res) => {
-  /**
-   *  1. Receive request
-   *  2. Validate input
-   *  3. Compute new array
-   *  4. Replace old array
-   *  5. Save document
-   *  6. Respond with updated data
-   */
   try {
     const loggedInUser = req.user;
     const { removeSkill } = req.body;
@@ -80,17 +72,19 @@ profileRouter.patch("/remove/skill", userAuth, async (req, res) => {
 
     // Check request remove skill exist in loggedInUserSkills
     const findRemoveSkill = loggedInUser.skills.includes(removeSkill);
-    if(!findRemoveSkill){
-        throw new Error("Skill doesn't exist")
+    if (!findRemoveSkill) {
+      throw new Error("Skill doesn't exist");
     }
 
-    const updatedSkills = loggedInUser.skills.filter((skill) => skill !== removeSkill);
+    const updatedSkills = loggedInUser.skills.filter(
+      (skill) => skill.toLowerCase() !== removeSkill.trim().toLowerCase(),
+    );
     loggedInUser.skills = updatedSkills;
 
-    await loggedInUser.save()
+    await loggedInUser.save();
 
     res.json({
-      message: "Successfully read the login data",
+      message: "Successfully removed skill",
       data: loggedInUser.skills,
     });
   } catch (err) {

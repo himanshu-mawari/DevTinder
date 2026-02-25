@@ -12,7 +12,7 @@ const ports = 3000;
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true, // tells the browser that the server allows cookies or authentication credentials to be sent and received from that origin
+    credentials: true, // tells the browser that the se rver allows cookies or authentication credentials to be sent and received from that origin
   }),
 );
 app.use(express.json());

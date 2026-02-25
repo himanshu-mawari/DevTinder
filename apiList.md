@@ -12,6 +12,7 @@
 # requestRouter
 -  POST /request/send/:status/:userId
 -  POST /request/review/:status/:request_id
+-  Delete /request/connection/:userId
 # userRouter
 - GET /user/requests/received
 - GET /user/connections
