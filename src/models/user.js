@@ -104,8 +104,9 @@ userSchema.methods.getJWT = async function (req, res) {
   }
 };
 
-userSchema.methods.verifyPassword = async function (user, password) {
+userSchema.methods.verifyPassword = async function (password) {
   try {
+    const user = this;
     const hashPassword = user.password;
     const passwordInputByUser = password;
     const isCorrectPassword = await bcrypt.compare(

@@ -6,6 +6,9 @@ const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cors = require("cors");
+const errorMiddleware = require("./middlewares/errorMiddleware");
+
+
 const app = express();
 const ports = 3000;
 
@@ -22,6 +25,7 @@ app.use("/", authRouter);
 app.use("/profile", profileRouter);
 app.use("/request", requestRouter);
 app.use("/user", userRouter);
+app.use(errorMiddleware);
 
 connectDb()
   .then(() => {

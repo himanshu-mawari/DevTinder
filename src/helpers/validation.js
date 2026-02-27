@@ -1,21 +1,25 @@
 const validator = require("validator");
 const bcrypt = require("bcrypt");
+const createError = require("../helpers/createError");
 
 const verifySignInput = (req) => {
   const { firstName, lastName, password, email } = req.body;
 
   if (!firstName) {
-    throw new Error("First name is required");
+    throw createError(401, "First name is required");
   } else if (!lastName) {
-    throw new Error("Last name is required");
+    throw createError(401, "Last name is required");
   } else if (firstName.length < 3 || firstName.length > 30) {
-    throw new Error("First name must be 3-30 characters");
-  } else if (!validator.isAlpha(firstName) && !validator.isAlpha(lastName)) {
-    throw new Error("first name and last name must be contains only alphabets");
+    throw createError(401, "First name must be 3-30 characters");
+  } else if (!validator.isAlpha(firstName) || !validator.isAlpha(lastName)) {
+    throw createError(
+      401,
+      "first name and last name must be contains only alphabets",
+    );
   } else if (!validator.isStrongPassword(password)) {
-    throw new Error("Make a strong password");
+    throw createError(401, "Make a strong password");
   } else if (!validator.isEmail(email)) {
-    throw new Error("Invalid email address");
+    throw createError(401, "Invalid email address");
   }
 };
 
@@ -35,19 +39,19 @@ const verifyProfileInput = (req) => {
   );
 
   if (!isEditable) {
-    throw new Error("Edit request not permitted");
+    throw createError(400, "Edit request not permitted");
   }
 };
 
 const verifyOldPassword = async (oldPassword, currentPassword) => {
   if (!oldPassword) {
-    throw new Error("Old password is required");
+    throw createError(400, "Old password is required");
   }
 
   const isPasswordMatch = await bcrypt.compare(oldPassword, currentPassword);
 
   if (!isPasswordMatch) {
-    throw new Error("Old password doesnt match");
+    throw createError(401, "Old password doesnt match");
   }
 };
 

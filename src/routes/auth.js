@@ -4,7 +4,7 @@ const User = require("../models/user");
 const { verifySignInput } = require("../helpers/validation");
 const authRouter = express.Router();
 
-authRouter.post("/signup", async (req, res) => {
+authRouter.post("/signup", async (req, res , next) => {
   try {
     verifySignInput(req);
 
@@ -28,51 +28,45 @@ authRouter.post("/signup", async (req, res) => {
 
     res.send(savedUser);
   } catch (err) {
-    res.status(400).json({
-      message:  err.message,
-    });
+    next(err)
   }
 });
 
-authRouter.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  authRouter.post("/login", async (req, res , next) => {
+    try {
+      const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
+      const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(400).send("Invalid credentials!");
+      if (!user) {
+        return createError(401 ,"Invalid credentials!");
+      }
+
+      const isCorrectPassword = await user.verifyPassword(password);
+
+      if (!isCorrectPassword) {
+        return createError(401 ,"Invalid credentials!");
+      } else {
+        const token = await user.getJWT();
+        res.cookie("token", token, {
+          expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
+        });
+        res.json({
+          message : "Logged in successfully",
+          data: user
+        });
+      }
+    } catch (err) {
+      next(err);
     }
+  });
 
-    const isCorrectPassword = await user.verifyPassword(user, password);
-
-    if (!isCorrectPassword) {
-      return res.status(400).send("Invalid credentials!");
-    } else {
-      const token = await user.getJWT();
-      res.cookie("token", token, {
-        expires: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-      });
-      res.json({
-         message : "Logged in successfully",
-        data: user
-      });
-    }
-  } catch (err) {
-    res.status(400).json({
-      message: "Error logging in  : " + err.message,
-    });
-  }
-});
-
-authRouter.post("/logout", async (req, res) => {
+authRouter.post("/logout", async (req, res , next) => {
   try {
-    await res.clearCookie("token", null, { expires: Date.now() });
+     res.clearCookie("token", null, { expires: Date.now() });
     res.send("logout successfully!");
   } catch (err) {
-    res.status(400).json({
-      message: "Error logging out : " + err.message,
-    });
+    next(err)
   }
 });
 

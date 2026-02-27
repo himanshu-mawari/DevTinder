@@ -3,8 +3,9 @@ const userAuth = require("../middlewares/auth");
 const User = require("../models/user");
 const ConnectionRequest = require("../models/connectionRequest");
 const requestRouter = express.Router();
+const createError = require("../helpers/createError")
 
-requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
+requestRouter.post("/send/:status/:userId", userAuth, async (req, res , next) => {
   try {
     const { status, userId } = req.params;
     const loggedinUserId = req.user._id;
@@ -12,16 +13,12 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
     const allowedStatus = ["ignored", "interested"];
     const isValidStatus = allowedStatus.includes(status);
     if (!isValidStatus) {
-      return res.status(404).json({
-        message: "Invalid status value",
-      });
+      return createError(400, "Invalid status value");
     }
 
     const existingUser = await User.findById(userId);
     if (!existingUser) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+      return createError(404, "User not found");
     }
 
     const existingRequest = await ConnectionRequest.findOne({
@@ -31,9 +28,7 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
       ],
     });
     if (existingRequest) {
-      return res.status(409).json({
-        message: "Connection request already exist",
-      });
+      return createError(409, "Connection request already exist");
     }
 
     const connectionRequest = new ConnectionRequest({
@@ -49,36 +44,28 @@ requestRouter.post("/send/:status/:userId", userAuth, async (req, res) => {
       data: connectionRequest,
     });
   } catch (err) {
-    res.status(400).json({
-      message: "Error sending connection request :" + err.message,
-    });
+    next(err);
   }
 });
 
-requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
+requestRouter.post("/review/:status/:requestId", userAuth, async (req, res , next) => {
   try {
     const { status, requestId } = req.params;
     const loggedinUserId = req.user._id;
 
-    // check if it status allowed
     const allowedStatuses = ["accepted", "rejected"];
     const isValidStatus = allowedStatuses.includes(status);
     if (!isValidStatus) {
-      return res.status(400).json({
-        message: "Invalid status value",
-      });
+      return createError(400, "Invalid status value");
     }
 
-    // find the connection request
     const connectionRequest = await ConnectionRequest.findOne({
       _id: requestId,
       toUserId: loggedinUserId,
       status: "interested",
     });
     if (!connectionRequest) {
-      return res.status(404).json({
-        message: "Connection request not found",
-      });
+      return createError(404, "Connection request not found");
     }
 
     connectionRequest.status = status;
@@ -89,13 +76,11 @@ requestRouter.post("/review/:status/:requestId", userAuth, async (req, res) => {
       data: connectionRequest,
     });
   } catch (err) {
-    res.status(400).json({
-      message: "Error reviewing connection request : " + err.message,
-    });
+    next(err);
   }
 });
 
-requestRouter.delete("/connection/:userId", userAuth, async (req, res) => {
+requestRouter.delete("/connection/:userId", userAuth, async (req, res , next) => {
   try {
     const { userId } = req.params;
     const loggedInUserId = req.user._id;
@@ -109,18 +94,14 @@ requestRouter.delete("/connection/:userId", userAuth, async (req, res) => {
     });
 
     if (!removeConnection) {
-      return res.status(404).json({
-        message: "Connection does not exist",
-      });
+      return createError(404, "Connection does not exist");
     }
 
     res.json({
       message: "Connection deleted successfully",
     });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 });
 

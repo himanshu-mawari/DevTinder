@@ -7,18 +7,17 @@ const {
   verifyOldPassword,
 } = require("../helpers/validation");
 const profileRouter = express.Router();
+const createError = require("../helpers/createError")
 
-profileRouter.get("/view", userAuth, async (req, res) => {
+profileRouter.get("/view", userAuth, async (req, res , next) => {
   try {
     res.send(req.user);
   } catch (err) {
-    res.status(400).json({
-      message: err.message,
-    });
+    next(err);
   }
 });
 
-profileRouter.patch("/edit", userAuth, async (req, res) => {
+profileRouter.patch("/edit", userAuth, async (req, res , next) => {
   try {
     verifyProfileInput(req);
 
@@ -32,13 +31,11 @@ profileRouter.patch("/edit", userAuth, async (req, res) => {
       data: loggedInUser,
     });
   } catch (err) {
-    res.status(400).json({
-      message: err.message,
-    });
+    next(err);
   }
 });
 
-profileRouter.patch("/reset-password", userAuth, async (req, res) => {
+profileRouter.patch("/reset-password", userAuth, async (req, res , next) => {
   try {
     const loggedInUser = req.user;
     const currentPassword = loggedInUser.password;
@@ -52,28 +49,24 @@ profileRouter.patch("/reset-password", userAuth, async (req, res) => {
 
     res.json({
       message: "Password updated successfully",
-      
     });
   } catch (err) {
-     res.status(400).json({
-      message : err.message
-     })
+    next(err);
   }
 });
 
-profileRouter.patch("/remove/skill", userAuth, async (req, res) => {
+profileRouter.patch("/remove/skill", userAuth, async (req, res , next) => {
   try {
     const loggedInUser = req.user;
     const { removeSkill } = req.body;
 
     if (!removeSkill) {
-      throw new Error("Skill not provided");
+      new createError(400, "Skill not provided");
     }
 
-    // Check request remove skill exist in loggedInUserSkills
     const findRemoveSkill = loggedInUser.skills.includes(removeSkill);
     if (!findRemoveSkill) {
-      throw new Error("Skill doesn't exist");
+      new createError(404, "Skill doesn't exist");
     }
 
     const updatedSkills = loggedInUser.skills.filter(
@@ -88,9 +81,7 @@ profileRouter.patch("/remove/skill", userAuth, async (req, res) => {
       data: loggedInUser.skills,
     });
   } catch (err) {
-    res.status(400).json({
-      message: "Error removing skill : " + err.message,
-    });
+    next(err)
   }
 });
 

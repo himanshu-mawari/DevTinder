@@ -7,12 +7,10 @@ const User = require("../models/user");
 const USER_SAFE_DATA =
   "profilePicture username firstName lastName bio age gender skills";
 
-// Get all the pending connection request for the loggedinuser
-userRouter.get("/requests/received", userAuth, async (req, res) => {
+userRouter.get("/requests/received", userAuth, async (req, res , next) => {
   try {
     const loggedinUserId = req.user._id;
 
-    // find the received connection request
     const connectionRequests = await ConnectionRequest.find({
       toUserId: loggedinUserId,
       status: "interested",
@@ -23,13 +21,11 @@ userRouter.get("/requests/received", userAuth, async (req, res) => {
       data: connectionRequests,
     });
   } catch (err) {
-    res.status(400).json({
-      message: err.message,
-    });
+    next(err)
   }
 });
 
-userRouter.get("/connections", userAuth, async (req, res) => {
+userRouter.get("/connections", userAuth, async (req, res , next) => {
   try {
     const loggedInUser = req.user;
 
@@ -51,11 +47,11 @@ userRouter.get("/connections", userAuth, async (req, res) => {
 
     res.json({ data });
   } catch (err) {
-    res.status(400).send({ message: err.message });
+    next(err)
   }
 });
 
-userRouter.get("/feed", userAuth, async (req, res) => {
+userRouter.get("/feed", userAuth, async (req, res , next) => {
   try {
     const loggedinUserId = req.user._id;
 
@@ -90,9 +86,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
       data: feedUser,
     });
   } catch (err) {
-    res.status(400).json({
-      message: err.message,
-    });
+    next(err)
   }
 });
 
