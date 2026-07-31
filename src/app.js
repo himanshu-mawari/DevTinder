@@ -7,15 +7,21 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cors = require("cors");
 const errorMiddleware = require("./middlewares/errorMiddleware");
+const {createServer} = require("http");
+const {Server} = require("socket.io");
 
 
 const app = express();
 const ports = 3000;
 
+const httpServer = createServer(app);
+const io = new Server(httpServer);
+
+
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true, // tells the browser that the se rver allows cookies or authentication credentials to be sent and received from that origin
+    credentials: true, 
   }),
 );
 app.use(express.json());
@@ -27,11 +33,24 @@ app.use("/request", requestRouter);
 app.use("/user", userRouter);
 app.use(errorMiddleware);
 
+
+//websocket server
+io.on("connection" , (socket) => {
+  console.log("websocker server is connected!!")
+
+  socket.on("disconnect" , () => {
+    console.log("disconnected from the websocket server!!")
+  })
+})
+
+
+
+
 connectDb()
   .then(() => {
     console.log("Database connected successfully");
 
-    app.listen(ports, () => {
+    httpServer.listen(ports, () => {
       console.log(`The server is listening on port ${ports} successfully!!!`);
     });
   })
