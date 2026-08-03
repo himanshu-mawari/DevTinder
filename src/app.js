@@ -7,21 +7,21 @@ const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
 const cors = require("cors");
 const errorMiddleware = require("./middlewares/errorMiddleware");
-const {createServer} = require("http");
-const {Server} = require("socket.io");
+const { createServer } = require("http");
+const initializeServer = require("./helpers/socket");
+
 
 
 const app = express();
 const ports = 3000;
 
 const httpServer = createServer(app);
-const io = new Server(httpServer);
-
+initializeServer(httpServer)
 
 app.use(
   cors({
     origin: "http://localhost:5173",
-    credentials: true, 
+    credentials: true,
   }),
 );
 app.use(express.json());
@@ -32,17 +32,6 @@ app.use("/profile", profileRouter);
 app.use("/request", requestRouter);
 app.use("/user", userRouter);
 app.use(errorMiddleware);
-
-
-//websocket server
-io.on("connection" , (socket) => {
-  console.log("websocker server is connected!!")
-
-  socket.on("disconnect" , () => {
-    console.log("disconnected from the websocket server!!")
-  })
-})
-
 
 
 
