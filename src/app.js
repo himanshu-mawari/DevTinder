@@ -5,6 +5,7 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
 const userRouter = require("./routes/user");
+const chatRouter = require("./routes/chat")
 const cors = require("cors");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 const { createServer } = require("http");
@@ -31,6 +32,7 @@ app.use("/", authRouter);
 app.use("/profile", profileRouter);
 app.use("/request", requestRouter);
 app.use("/user", userRouter);
+app.use("/chats" , chatRouter )
 app.use(errorMiddleware);
 
 
