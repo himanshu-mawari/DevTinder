@@ -8,9 +8,9 @@ This document lists all available API endpoints for the DevTinder backend.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| POST | /api/signup | Register a new user |
-| POST | /api/login | Authenticate user |
-| POST | /api/logout | Logout the current user |
+| POST | /signup | Register a new user |
+| POST | /login | Authenticate user |
+| POST | /logout | Logout the current user |
 
 ---
 
@@ -18,10 +18,10 @@ This document lists all available API endpoints for the DevTinder backend.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| GET | /api/profile/view | Get logged-in user's profile |
-| PATCH | /api/profile/edit | Update profile information |
-| PATCH | /api/profile/password | Change account password |
-| PATCH | /api/profile/remove/skill | Remove a skill from profile |
+| GET | /profile/view | Get logged-in user's profile |
+| PATCH | /profile/edit | Update profile information |
+| PATCH | /profile/password | Change account password |
+| PATCH | /profile/remove/skill | Remove a skill from profile |
 
 ---
 
@@ -29,9 +29,9 @@ This document lists all available API endpoints for the DevTinder backend.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| POST | /api/request/send/:status/:userId | Send a connection request |
-| POST | /api/request/review/:status/:requestId | Review a received connection request |
-| DELETE | /api/request/connection/:userId | Remove an existing connection |
+| POST | /request/send/:status/:userId | Send a connection request |
+| POST | /request/review/:status/:requestId | Review a received connection request |
+| DELETE | /request/connection/:userId | Remove an existing connection |
 
 **Supported request statuses:**
 
@@ -46,9 +46,9 @@ This document lists all available API endpoints for the DevTinder backend.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| GET | /api/user/feed | Get user feed |
-| GET | /api/user/connections | Get logged-in user's connections |
-| GET | /api/user/requests/received | Get received connection requests |
+| GET | /user/feed | Get user feed |
+| GET | /user/connections | Get logged-in user's connections |
+| GET | /user/requests/received | Get received connection requests |
 
 ---
 
@@ -56,8 +56,8 @@ This document lists all available API endpoints for the DevTinder backend.
 
 | Method | Endpoint | Description |
 | ------ | -------- | ----------- |
-| GET | /api/chats | Get all chats of the logged-in user |
-| GET | /api/chats/:chatId/messages | Get message history for a chat |
+| GET | /chats | Get all chats of the logged-in user |
+| GET | /chats/:chatId/messages | Get message history for a chat |
 
 ---
 
