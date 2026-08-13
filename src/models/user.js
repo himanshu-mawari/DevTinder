@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const { verifyArrayLength } = require("../helpers/validation");
+require("dotenv").config();
 
 const userSchema = mongoose.Schema(
   {
@@ -72,11 +74,7 @@ const userSchema = mongoose.Schema(
     skills: {
       type: [String],
       default: [],
-      validate(value) {
-        if (value.length > 10) {
-          throw new Error("Maximum of 10 skills are allowed");
-        }
-      },
+      validate: verifyArrayLength(10),
     },
     gender: {
       type: String,
@@ -84,6 +82,24 @@ const userSchema = mongoose.Schema(
         values: ["male", "female", "others"],
         message: "{VALUE} is not a valid gender",
       },
+    },
+    tags: {
+      type: [String],
+      default: [],
+      validate: verifyArrayLength(5),
+    },
+    githubUrl: {
+      type: String,
+      default: "",
+      match: [
+        /^$|^https:\/\/(www\.)?github\.com\/.+/,
+        "Must be a valid gitHub url",
+      ],
+    },
+    portfolioUrl: {
+      type: String,
+      default: "",
+      match: [/^$|^https?:\/\/.+/, "Must be a valid url"],
     },
   },
   { timestamps: true },
@@ -93,9 +109,8 @@ userSchema.methods.getJWT = async function (req, res) {
   try {
     const user = this;
 
-    const privateKey = "DevTinder@2108#&";
-    const token = await jwt.sign({ _id: user._id }, privateKey, {
-      expiresIn: "1d",
+    const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
     return token;
