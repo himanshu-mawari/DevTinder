@@ -76,6 +76,9 @@ const initializeServer = (httpServer) => {
       );
 
       socket.join(roomId);
+      
+      socket.emit("chatJoined" , {chatId : chat._id})
+
     });
 
     // send message
@@ -102,11 +105,13 @@ const initializeServer = (httpServer) => {
       const chatId = chat._id;
       console.log(chatId);
 
-      const message = await Message.create({
+      let message = await Message.create({
         text,
         senderId: userId,
         chatId,
       });
+
+      message = await message.populate("senderId" , "firstName lastName") 
 
       await Chat.findByIdAndUpdate(chatId, {
         lastMessage: text,

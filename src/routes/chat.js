@@ -17,7 +17,7 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
 
     res.json({
       message: "Successfully fetch chats",
-      chats,
+      chatList:chats,
     });
   } catch (err) {
     next(err);
@@ -28,6 +28,8 @@ chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
   try {
     const loggedInUserId = req.user._id;
     const { chatId } = req.params;
+    let { limit, before } = req.query;
+    limit = Number(limit);
 
     const chat = await Chat.findById(chatId);
     if (!chat) {
@@ -39,14 +41,23 @@ chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
       return next(createError(403, "You are not a participant in this chat"));
     }
 
-    const messages = await Message.find({ chatId: chat._id }).populate(
-      "senderId",
-      "firstName lastName",
-    );
+    const query = { chatId: chat._id };
+
+    if (before) {
+      query._id = { $lt: before };
+    }
+
+    const messages = await Message.find(query)
+      .populate("senderId", "firstName lastName")
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    const hasMore = messages.length === limit;
 
     res.json({
       message: "Successfully fetched all messages",
       messages,
+      hasMore,
     });
   } catch (err) {
     next(err);
