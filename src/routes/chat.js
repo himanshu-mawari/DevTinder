@@ -11,13 +11,14 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
   try {
     const loggedInUserId = req.user._id;
 
-    const chats = await Chat.find({ participants: loggedInUserId })
-      .populate("participants", "firstName lastName")
-      .sort({ lastMessageAt: -1 });
+    const chats = await Chat.find({ participants: loggedInUserId }).populate(
+      "participants",
+      "firstName lastName lastMessage lastMessageAt",
+    );
 
     res.json({
       message: "Successfully fetch chats",
-      chatList:chats,
+      chatList: chats,
     });
   } catch (err) {
     next(err);
