@@ -6,6 +6,7 @@ const Message = require("../models/message");
 const Chat = require("../models/chat");
 const { getSecretRoomId } = require("../helpers/getSecretRoomId");
 const { parseCookie } = require("cookie");
+const mongoose = require("mongoose");
 require("dotenv").config();
 
 const initializeServer = (httpServer) => {
@@ -15,28 +16,31 @@ const initializeServer = (httpServer) => {
       credentials: true,
     },
   });
-  
+
   io.use((socket, next) => {
     try {
       const cookies = parseCookie(socket.handshake.headers.cookie || "");
       const token = cookies.token;
-      
+
       const decodedToken = verifyJwt(token, process.env.JWT_SECRET);
       if (!decodedToken) return next(createError(401, "invalid token"));
       const { _id: userId } = decodedToken;
-      
+
       socket.userId = userId;
       next();
     } catch (err) {
       next(new Error("Auth failed"));
     }
   });
-  
+
   io.on("connection", (socket) => {
     const userId = socket.userId;
-    console.log(`${socket.userId} connected from the websocket server!!`);
 
     socket.on("joinChat", async ({ targetUserId }) => {
+      if (!targetUserId || !mongoose.Types.ObjectId.isValid(targetUserId)) {
+        return socket.emit("joinChatError", { message: "Invalid target user" });
+      }
+
       const roomId = getSecretRoomId(userId, targetUserId);
 
       const connection = await ConnectionRequest.findOne({
@@ -74,7 +78,11 @@ const initializeServer = (httpServer) => {
 
     socket.on("sendMessage", async ({ targetUserId, text }) => {
       const roomId = getSecretRoomId(socket.userId, targetUserId);
-
+      if (!text || !text.trim()) {
+        return socket.emit("sendMessageError", {
+          message: "Message cannot be empty",
+        });
+      }
       if (!socket.rooms.has(roomId)) {
         socket.emit("sendMessageError", { message: "Join the chat first" });
         return;
@@ -87,7 +95,6 @@ const initializeServer = (httpServer) => {
       }
 
       const chatId = chat._id;
-      console.log(chatId);
 
       let message = await Message.create({
         text,
@@ -95,14 +102,19 @@ const initializeServer = (httpServer) => {
         chatId,
       });
 
-      message = await message.populate("senderId", "firstName lastName");
-
       await Chat.findByIdAndUpdate(chatId, {
         lastMessage: text,
-        lastMessageAt: Date.now(),
+        lastMessageAt: message.createdAt,
       });
 
-      io.to(roomId).emit("messageReceived", message);
+      const payload = {
+        _id: message._id,
+        senderId: message.senderId,
+        text: message.text,
+        createdAt: message.createdAt,
+      };
+
+      io.to(roomId).emit("messageReceived", payload);
     });
 
     socket.on("disconnect", () => {
