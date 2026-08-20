@@ -13,7 +13,7 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
 
     const chats = await Chat.find({ participants: loggedInUserId }).populate(
       "participants",
-      "firstName lastName lastMessage lastMessageAt",
+      "firstName lastName profilePicture lastMessage lastMessageAt",
     );
 
     res.json({
