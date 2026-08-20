@@ -1,13 +1,14 @@
 const express = require("express");
 const userRouter = express.Router();
-
+const createError = require("../helpers/createError");
+const mongoose = require("mongoose")
 const ConnectionRequest = require("../models/connectionRequest");
 const userAuth = require("../middlewares/auth");
 const User = require("../models/user");
 const USER_SAFE_DATA =
-  "profilePicture username firstName lastName bio age gender skills";
+  "profilePicture  firstName lastName bio age gender skills tags username githubUsername portfolioUrl location role";
 
-userRouter.get("/requests/received", userAuth, async (req, res , next) => {
+userRouter.get("/requests/received", userAuth, async (req, res, next) => {
   try {
     const loggedinUserId = req.user._id;
 
@@ -21,11 +22,11 @@ userRouter.get("/requests/received", userAuth, async (req, res , next) => {
       data: connectionRequests,
     });
   } catch (err) {
-    next(err)
+    next(err);
   }
 });
 
-userRouter.get("/connections", userAuth, async (req, res , next) => {
+userRouter.get("/connections", userAuth, async (req, res, next) => {
   try {
     const loggedInUser = req.user;
 
@@ -45,13 +46,16 @@ userRouter.get("/connections", userAuth, async (req, res , next) => {
       return row.fromUserId;
     });
 
-    res.json({ data });
+    res.json({
+      message: "Successfully fetching the pending requests",
+      data,
+    });
   } catch (err) {
-    next(err)
+    next(err);
   }
 });
 
-userRouter.get("/feed", userAuth, async (req, res , next) => {
+userRouter.get("/feed", userAuth, async (req, res, next) => {
   try {
     const loggedinUserId = req.user._id;
 
@@ -86,7 +90,28 @@ userRouter.get("/feed", userAuth, async (req, res , next) => {
       data: feedUser,
     });
   } catch (err) {
-    next(err)
+    next(err);
+  }
+});
+
+userRouter.get("/:userId", userAuth, async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return next(createError(400, "Invalid user id"));
+    }
+
+    const user = await User.findById(userId).select("firstName lastName username profilePicture");
+    if (!user) {
+      return next(createError(404, "User not found"));
+    }
+
+    res.json({
+      data: user,
+    });
+  } catch (err) {
+    next(err);
   }
 });
 
