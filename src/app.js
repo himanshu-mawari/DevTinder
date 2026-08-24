@@ -10,12 +10,11 @@ const cors = require("cors");
 const errorMiddleware = require("./middlewares/errorMiddleware");
 const { createServer } = require("http");
 const initializeServer = require("./helpers/socket");
-const {Server} = require("socket.io")
+const connectCloudinary = require("./config/cloudinary");
 require("dotenv").config();
 
 const app = express();
-const ports = process.env.PORT || 3000;
-
+const port = process.env.PORT || 3000;
 
 app.use(
   cors({
@@ -23,7 +22,6 @@ app.use(
     credentials: true,
   }),
 );
-
 
 app.use(express.json());
 app.use(cookieParser());
@@ -38,14 +36,19 @@ app.use(errorMiddleware);
 const httpServer = createServer(app);
 
 initializeServer(httpServer);
-connectDb()
-  .then(() => {
-    console.log("Database connected successfully");
 
-    httpServer.listen(ports, () => {
-      console.log(`The server is listening on port ${ports} successfully!!!`);
+const startServer = async () => {
+  try {
+    await connectDb();
+    console.log("Database connected successfully");
+    await connectCloudinary();
+    console.log("Cloudinary connected successfully");
+    httpServer.listen(port, () => {
+      console.log(`Server listening on port ${port}`);
     });
-  })
-  .catch((err) => {
-    console.error("Error:" + err.message);
-  });
+  } catch (err) {
+    console.error("Start up failed: " + err.message);
+  }
+};
+
+startServer();
