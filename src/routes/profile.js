@@ -7,7 +7,9 @@ const {
   verifyOldPassword,
 } = require("../helpers/validation");
 const profileRouter = express.Router();
-const createError = require("../helpers/createError")
+const createError = require("../helpers/createError");
+const upload = require("../middlewares/multer");
+const bufferToCloudinary = require("../helpers/bufferToCloudinary");
 
 profileRouter.get("/view", userAuth, async (req, res , next) => {
   try {
@@ -17,11 +19,16 @@ profileRouter.get("/view", userAuth, async (req, res , next) => {
   }
 });
 
-profileRouter.patch("/edit", userAuth, async (req, res , next) => {
+profileRouter.patch("/edit", userAuth, upload.single('avatar') ,async (req, res , next) => {
   try {
     verifyProfileInput(req);
+    const avatarFile = req.file;  
 
     const loggedInUser = req.user;
+
+    const uploadResult = await bufferToCloudinary(avatarFile.buffer , "devtinder/avatars");
+
+    loggedInUser.profilePicture = uploadResult.url;
 
     Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
     await loggedInUser.save();
@@ -61,12 +68,12 @@ profileRouter.patch("/remove/skill", userAuth, async (req, res , next) => {
     const { removeSkill } = req.body;
 
     if (!removeSkill) {
-      new createError(400, "Skill not provided");
+      return next(createError(400, "Skill not provided"));
     }
 
     const findRemoveSkill = loggedInUser.skills.includes(removeSkill);
     if (!findRemoveSkill) {
-      new createError(404, "Skill doesn't exist");
+      return next(createError(404, "Skill doesn't exist"));
     }
 
     const updatedSkills = loggedInUser.skills.filter(
@@ -84,5 +91,6 @@ profileRouter.patch("/remove/skill", userAuth, async (req, res , next) => {
     next(err)
   }
 });
+
 
 module.exports = profileRouter;

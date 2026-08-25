@@ -25,6 +25,7 @@ const verifySignInput = (req) => {
 
 const verifyProfileInput = (req) => {
   const approvedFields = [
+    "username",
     "firstName",
     "lastName",
     "age",
@@ -32,6 +33,11 @@ const verifyProfileInput = (req) => {
     "bio",
     "skills",
     "gender",
+    "tags",
+    "portfolioUrl",
+    "githubUsername",
+    "location",
+    "role"
   ];
 
   const isEditable = Object.keys(req.body).every((field) =>
@@ -55,4 +61,14 @@ const verifyOldPassword = async (oldPassword, currentPassword) => {
   }
 };
 
-module.exports = { verifySignInput, verifyProfileInput, verifyOldPassword };
+const verifyArrayLength = (max) => ({
+  validator: (value) => value.length < max,
+  message: `You can add a maximum of ${max} items`,
+});
+
+module.exports = {
+  verifySignInput,
+  verifyProfileInput,
+  verifyOldPassword,
+  verifyArrayLength,
+};
