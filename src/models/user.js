@@ -54,14 +54,11 @@ const userSchema = mongoose.Schema(
     },
     profilePicture: {
       type: String,
-      default:
-        "https://img.freepik.com/premium-vector/profile-icon_838328-1033.jpg",
+      default: null,
       validate(value) {
         const isValidUrl = validator.isURL(value);
 
-        const isImageUrl = /\.(jpg|jpeg|png|webp|gif)$/i.test(value);
-
-        if (!isValidUrl || !isImageUrl) {
+        if (!isValidUrl) {
           throw new Error("Invalid image url");
         }
       },
@@ -88,18 +85,30 @@ const userSchema = mongoose.Schema(
       default: [],
       validate: verifyArrayLength(5),
     },
-    githubUrl: {
+    githubUsername: {
       type: String,
-      default: "",
-      match: [
-        /^$|^https:\/\/(www\.)?github\.com\/.+/,
-        "Must be a valid gitHub url",
-      ],
+      unique: true,
+      sparse: true,
+      lowercase: true,
+      trim: true,
+      match: [/^[a-zA-Z0-9-]*$/, "Invalid GitHub username"],
     },
     portfolioUrl: {
       type: String,
       default: "",
       match: [/^$|^https?:\/\/.+/, "Must be a valid url"],
+    },
+    location: {
+      type: String,
+      trim: true,
+      maxLength: 150,
+      default: "",
+    },
+    title: {
+      type: String,
+      trim: true,
+      maxLength: 100,
+      default: null,
     },
   },
   { timestamps: true },
