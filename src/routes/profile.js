@@ -11,7 +11,7 @@ const createError = require("../helpers/createError");
 const upload = require("../middlewares/multer");
 const bufferToCloudinary = require("../helpers/bufferToCloudinary");
 
-profileRouter.get("/view", userAuth, async (req, res , next) => {
+profileRouter.get("/view", userAuth, async (req, res, next) => {
   try {
     res.send(req.user);
   } catch (err) {
@@ -19,30 +19,55 @@ profileRouter.get("/view", userAuth, async (req, res , next) => {
   }
 });
 
-profileRouter.patch("/edit", userAuth, upload.single('avatar') ,async (req, res , next) => {
-  try {
-    verifyProfileInput(req);
-    const avatarFile = req.file;  
+profileRouter.patch(
+  "/edit",
+  userAuth,
+  upload.single("profilePicture"),
+  async (req, res, next) => {
+    try {
+      verifyProfileInput(req);
+      const avatarFile = req.file;
+      const loggedInUser = req.user;
 
-    const loggedInUser = req.user;
+      const arrayFields = ["skills", "interests"];
 
-    const uploadResult = await bufferToCloudinary(avatarFile.buffer , "devtinder/avatars");
+      Object.keys(req.body).forEach((key) => {
+        if (!arrayFields.includes(key)) {
+          loggedInUser[key] = req.body[key];
+        }
+      });
+      if (req.body.skills !== undefined) {
+        loggedInUser.skills = req.body.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
 
-    loggedInUser.profilePicture = uploadResult.url;
+      if (req.body.tags !== undefined) {
+        loggedInUser.tags = req.body.tags
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+      if (req.file) {
+        const uploadResult = await bufferToCloudinary(
+          avatarFile.buffer,
+          "devtinder/avatars",
+        );
+        loggedInUser.profilePicture = uploadResult.secure_url;
+      }
+      await loggedInUser.save();
 
-    Object.keys(req.body).forEach((key) => (loggedInUser[key] = req.body[key]));
-    await loggedInUser.save();
+      res.json({
+        message: "Profile updated successfully",
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
 
-    res.json({
-      message: "Profile updated successfully",
-      data: loggedInUser,
-    });
-  } catch (err) {
-    next(err);
-  }
-});
-
-profileRouter.patch("/reset-password", userAuth, async (req, res , next) => {
+profileRouter.patch("/reset-password", userAuth, async (req, res, next) => {
   try {
     const loggedInUser = req.user;
     const currentPassword = loggedInUser.password;
@@ -62,7 +87,7 @@ profileRouter.patch("/reset-password", userAuth, async (req, res , next) => {
   }
 });
 
-profileRouter.patch("/remove/skill", userAuth, async (req, res , next) => {
+profileRouter.patch("/remove/skill", userAuth, async (req, res, next) => {
   try {
     const loggedInUser = req.user;
     const { removeSkill } = req.body;
@@ -88,9 +113,8 @@ profileRouter.patch("/remove/skill", userAuth, async (req, res , next) => {
       data: loggedInUser.skills,
     });
   } catch (err) {
-    next(err)
+    next(err);
   }
 });
-
 
 module.exports = profileRouter;
