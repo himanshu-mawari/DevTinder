@@ -56,6 +56,7 @@ const userSchema = mongoose.Schema(
       type: String,
       default: null,
       validate(value) {
+        if (value === null) return;
         const isValidUrl = validator.isURL(value);
 
         if (!isValidUrl) {
@@ -107,7 +108,7 @@ const userSchema = mongoose.Schema(
     title: {
       type: String,
       trim: true,
-      maxLength: 100,
+      maxLength: [100, "Title cannot exceed 100 characters"],
       default: null,
     },
   },
