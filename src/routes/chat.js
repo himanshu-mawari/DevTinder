@@ -16,9 +16,19 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
       "firstName lastName profilePicture lastMessage lastMessageAt",
     );
 
+    const chatWithUnreadStatus = chats.map((chat) => {
+      const isUnread =
+        new Date(chat.lastMessageAt) >
+        new Date(chat.lastReadBy[loggedInUserId] || 0);
+      return {
+        ...chat.toObject(),
+        isUnread,
+      };
+    });
+
     res.json({
       message: "Successfully fetch chats",
-      chatList: chats,
+      chatList: chatWithUnreadStatus,
     });
   } catch (err) {
     next(err);
@@ -48,18 +58,41 @@ chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
       query._id = { $lt: before };
     }
 
-    const messages = await Message.find(query)
+    let messages = await Message.find(query)
       .populate("senderId", "firstName lastName")
       .sort({ createdAt: -1 })
       .limit(limit);
 
     const hasMore = messages.length === limit;
 
+    messages = messages.reverse();
+
     res.json({
       message: "Successfully fetched all messages",
       messages,
       hasMore,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+chatRouter.patch("/:chatId/read", userAuth, async (req, res, next) => {
+  try {
+    const { chatId } = req.params;
+    const loggedInUserId = req.user._id;
+
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      return next(createError(404, "Chat not found"));
+    }
+
+    chat.lastReadBy[loggedInUserId.toString()] = chat.lastMessageAt;
+
+    await chat.save();
+
+    res.json({ message: "Chat marked as read" });
   } catch (err) {
     next(err);
   }
