@@ -105,8 +105,11 @@ const initializeServer = (httpServer) => {
       });
 
       await Chat.findByIdAndUpdate(chatId, {
-        lastMessage: text,
-        lastMessageAt: message.createdAt,
+        $set: {
+          lastMessage: text,
+          lastMessageAt: message.createdAt,
+          [`lastReadBy.${userId}`]: message.createdAt,
+        },
       });
 
       const payload = {
@@ -117,6 +120,16 @@ const initializeServer = (httpServer) => {
       };
 
       io.to(roomId).emit("messageReceived", payload);
+
+      const chatPayload = {
+        chatId: chat._id,
+        lastMessage: text,
+        lastMessageAt: message.createdAt,
+        senderId: userId,
+        isUnread: true
+      };
+
+      io.to(userId).emit("newChatMessage" , chatPayload);
     });
 
     socket.on("disconnect", () => {
