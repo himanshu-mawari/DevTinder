@@ -18,6 +18,10 @@ const chatSchema = mongoose.Schema(
       type: Date,
       default: null,
     },
+    lastReadBy: {
+      type: Object,
+      default: {},
+    },
   },
   { timestamps: true },
 );
