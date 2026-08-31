@@ -29,12 +29,14 @@ const initializeServer = (httpServer) => {
       socket.userId = userId;
       next();
     } catch (err) {
-      next(new Error("Auth failed"));
+      next(createError(401, "Auth failed"));
     }
   });
 
   io.on("connection", (socket) => {
     const userId = socket.userId;
+
+    socket.join(`user:${userId}`);
 
     socket.on("joinChat", async ({ targetUserId }) => {
       if (!targetUserId || !mongoose.Types.ObjectId.isValid(targetUserId)) {
@@ -121,6 +123,7 @@ const initializeServer = (httpServer) => {
       console.log(`${socket.userId} disconnected from the websocket server!!`);
     });
   });
+  return io;
 };
 
 module.exports = initializeServer;
