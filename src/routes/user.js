@@ -1,12 +1,12 @@
 const express = require("express");
 const userRouter = express.Router();
 const createError = require("../helpers/createError");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 const ConnectionRequest = require("../models/connectionRequest");
 const userAuth = require("../middlewares/auth");
 const User = require("../models/user");
 const USER_SAFE_DATA =
-  "profilePicture  firstName lastName bio age gender skills tags username githubUsername portfolioUrl location role";
+  "profilePicture  firstName lastName bio age gender skills tags username githubUsername portfolioUrl location title";
 
 userRouter.get("/requests/received", userAuth, async (req, res, next) => {
   try {
