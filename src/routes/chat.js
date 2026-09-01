@@ -80,22 +80,28 @@ chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
 chatRouter.patch("/:chatId/read", userAuth, async (req, res, next) => {
   try {
     const { chatId } = req.params;
-    const loggedInUserId = req.user._id;
+    const loggedInUserId = req.user._id.toString();
 
     const chat = await Chat.findById(chatId);
-
     if (!chat) {
       return next(createError(404, "Chat not found"));
     }
 
-    chat.lastReadBy[loggedInUserId.toString()] = chat.lastMessageAt;
+    const isParticipant = chat.participants.some(
+      (p) => p.toString() === loggedInUserId
+    );
+    if (!isParticipant) {
+      return next(createError(403, "Not a participant of this chat"));
+    }
 
-    await chat.save();
+    await Chat.findByIdAndUpdate(chatId, {
+      $set: { [`lastReadBy.${loggedInUserId}`]: new Date() },
+    });
 
     res.json({ message: "Chat marked as read" });
   } catch (err) {
     next(err);
   }
-});
+});;
 
 module.exports = chatRouter;
