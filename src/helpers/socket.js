@@ -126,10 +126,10 @@ const initializeServer = (httpServer) => {
         lastMessage: text,
         lastMessageAt: message.createdAt,
         senderId: userId,
-        isUnread: true
+        isUnread: true,
       };
 
-      io.to(userId).emit("newChatMessage" , chatPayload);
+      io.to(`user:${targetUserId}`).emit("newChatMessage", chatPayload);
     });
 
     socket.on("disconnect", () => {
