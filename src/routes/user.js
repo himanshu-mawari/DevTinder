@@ -57,37 +57,46 @@ userRouter.get("/connections", userAuth, async (req, res, next) => {
 
 userRouter.get("/feed", userAuth, async (req, res, next) => {
   try {
-    const loggedinUserId = req.user._id;
+    const loggedInUserId = req.user._id;
 
-    const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
+    const page = Math.max(parseInt(req.query.page) || 1, 1);
+    const limit = Math.min(parseInt(req.query.limit) || 10, 50);
     const skip = (page - 1) * limit;
 
-    limit = limit > 50 ? 50 : limit;
+    const connections = await ConnectionRequest.find({
+      $or: [{ fromUserId: loggedInUserId }, { toUserId: loggedInUserId }],
+    })
+      .select("fromUserId toUserId")
+      .lean();
 
-    const users = await ConnectionRequest.find({
-      $or: [{ fromUserId: loggedinUserId }, { toUserId: loggedinUserId }],
+    const excludedUserIds = new Set([loggedInUserId.toString()]);
+
+    connections.forEach(({ fromUserId, toUserId }) => {
+      excludedUserIds.add(fromUserId.toString());
+      excludedUserIds.add(toUserId.toString());
     });
 
-    const hideUserFromFeed = new Set();
-    users.forEach((req) => {
-      hideUserFromFeed.add(req.fromUserId.toString());
-      hideUserFromFeed.add(req.toUserId.toString());
-    });
-
-    const feedUser = await User.find({
-      $and: [
-        { _id: { $nin: Array.from(hideUserFromFeed) } },
-        { _id: { $ne: loggedinUserId } },
-      ],
+    const feedUsers = await User.find({
+      _id: {
+        $nin: [...excludedUserIds],
+      },
     })
       .select(USER_SAFE_DATA)
+      .sort({ _id: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit + 1)
+      .lean();
 
+    const hasMore = feedUsers.length > limit;
+    const pageResults = hasMore ? feedUsers.slice(0, limit) : feedUsers;
     res.json({
       message: "Successfully fetched the user profiles",
-      data: feedUser,
+      data: pageResults,
+      pagination: {
+        page,
+        limit,
+        hasMore,
+      },
     });
   } catch (err) {
     next(err);
@@ -102,7 +111,9 @@ userRouter.get("/:userId", userAuth, async (req, res, next) => {
       return next(createError(400, "Invalid user id"));
     }
 
-    const user = await User.findById(userId).select("firstName lastName username profilePicture");
+    const user = await User.findById(userId).select(
+      "firstName lastName username profilePicture",
+    );
     if (!user) {
       return next(createError(404, "User not found"));
     }
