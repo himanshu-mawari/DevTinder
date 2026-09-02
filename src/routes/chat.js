@@ -38,21 +38,28 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
 chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
   try {
     const loggedInUserId = req.user._id;
+    console.log(loggedInUserId.toString());
     const { chatId } = req.params;
     let { limit, before } = req.query;
-    limit = Number(limit);
+    limit = Math.min(Number(limit) || 20, 50);
 
     const chat = await Chat.findById(chatId);
     if (!chat) {
       return next(createError(404, "Chat not found"));
     }
-    const isLoggedInUserParticipate =
-      chat.participants.includes(loggedInUserId);
+    const isLoggedInUserParticipate = chat.participants.some(
+      (p) => p.toString() === loggedInUserId.toString(),
+    );
+  
     if (!isLoggedInUserParticipate) {
       return next(createError(403, "You are not a participant in this chat"));
     }
 
     const query = { chatId: chat._id };
+
+    if (before && !mongoose.Types.ObjectId.isValid(before)) {
+      return next(createError(400, "Invalid id"));
+    }
 
     if (before) {
       query._id = { $lt: before };
