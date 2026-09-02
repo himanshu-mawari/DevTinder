@@ -61,15 +61,17 @@ chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
     let messages = await Message.find(query)
       .populate("senderId", "firstName lastName")
       .sort({ createdAt: -1 })
-      .limit(limit);
+      .limit(limit + 1)
+      .lean();
 
-    const hasMore = messages.length === limit;
-
-    messages = messages.reverse();
+    const hasMore = messages.length > limit;
+    const messageResults = (
+      hasMore ? messages.slice(0, limit) : messages
+    ).reverse();
 
     res.json({
       message: "Successfully fetched all messages",
-      messages,
+      messages: messageResults,
       hasMore,
     });
   } catch (err) {
@@ -88,7 +90,7 @@ chatRouter.patch("/:chatId/read", userAuth, async (req, res, next) => {
     }
 
     const isParticipant = chat.participants.some(
-      (p) => p.toString() === loggedInUserId
+      (p) => p.toString() === loggedInUserId,
     );
     if (!isParticipant) {
       return next(createError(403, "Not a participant of this chat"));
@@ -102,6 +104,6 @@ chatRouter.patch("/:chatId/read", userAuth, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});;
+});
 
 module.exports = chatRouter;
