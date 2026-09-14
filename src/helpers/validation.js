@@ -37,15 +37,18 @@ const verifyProfileInput = (req) => {
     "portfolioUrl",
     "githubUsername",
     "location",
-    "role"
+    "title",
   ];
 
-  const isEditable = Object.keys(req.body).every((field) =>
-    approvedFields.includes(field),
+  const invalidFields = Object.keys(req.body).filter(
+    (field) => !approvedFields.includes(field),
   );
 
-  if (!isEditable) {
-    throw createError(400, "Edit request not permitted");
+  if (invalidFields.length > 0) {
+    throw createError(
+      400,
+      `Edit request not permitted for field(s): ${invalidFields.join(", ")}`,
+    );
   }
 };
 
