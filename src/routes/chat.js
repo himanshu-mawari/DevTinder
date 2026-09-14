@@ -38,7 +38,6 @@ chatRouter.get("/", userAuth, async (req, res, next) => {
 chatRouter.get("/:chatId/messages", userAuth, async (req, res, next) => {
   try {
     const loggedInUserId = req.user._id;
-    console.log(loggedInUserId.toString());
     const { chatId } = req.params;
     let { limit, before } = req.query;
     limit = Math.min(Number(limit) || 20, 50);

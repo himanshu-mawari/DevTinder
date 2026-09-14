@@ -68,10 +68,9 @@ requestRouter.patch(
   userAuth,
   async (req, res, next) => {
     try {
-      // todo : create chat docs , if status is accepted send
-
       const { status, requestId } = req.params;
       const loggedinUserId = req.user._id;
+      const io = req.app.get("io");
 
       const allowedStatuses = ["accepted", "rejected"];
       const isValidStatus = allowedStatuses.includes(status);
@@ -89,7 +88,7 @@ requestRouter.patch(
       }
 
       connectionRequest.status = status;
-      await connectionRequest.save();
+      const updatedConnectionRequest = await connectionRequest.save();
 
       const otherUserId = connectionRequest.fromUserId.toString();
       const roomId = getSecretRoomId(loggedinUserId.toString(), otherUserId);
@@ -104,6 +103,16 @@ requestRouter.patch(
             },
           },
           { upsert: true, new: true },
+        );
+
+        const fromUserData = await updatedConnectionRequest.populate(
+          "fromUserId",
+          USER_SAFE_DATA,
+        );
+
+        io.to(`user:${otherUserId}`).emit(
+          "connectionRequestAccepted",
+          fromUserData.fromUserId,
         );
       }
 
