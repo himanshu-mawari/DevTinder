@@ -1,89 +1,115 @@
-# DevTinder
+# DevTinder — Backend
 
-DevTinder is a developer-centric matchmaking platform where users can discover other developers, send connection requests, and communicate through real-time one-to-one messaging.
+REST and real-time API for DevTinder, a developer-matching platform with live chat and connection requests.
 
-The backend is built with **Node.js**, **Express**, **MongoDB**, **Mongoose**, and **Socket.IO**. While the project was initially inspired by  [Akshay Saini's Namaste Node.js course.](https://namastedev.com/learn/namaste-node)
+## Features
 
----
-## 📖 Why I Built DevTinder?
+* JWT-based authentication with httpOnly cookies
+* Developer discovery feed with page-based pagination
+* Connection requests with real-time request and acceptance events
+* One-to-one real-time messaging with cursor-based message history pagination
+* Per-user read tracking for chat messages
+* Real-time communication via Socket.IO
 
-I built DevTinder to move beyond basic CRUD applications and gain hands-on experience building a production-oriented backend. Through this project, I explored authentication, authorization, user relationships, RESTful API design, database modeling, and real-time one-to-one messaging using Socket.IO while focusing on writing scalable, maintainable, and readable backend code. Although it began as part of my backend learning journey, I continued extending it independently by designing new features, making architectural decisions, and implementing functionality.
+## Tech Stack
 
----
+- Node.js
+- Express.js
+- MongoDB / Mongoose
+- Socket.IO
+- JWT
+- bcrypt
 
-## 🛠️ Tech Stack
+## Architecture
 
-* **Node.js** — Runtime environment
-* **Express.js** — Web framework
-* **MongoDB + Mongoose** — Database & ODM
-* **Socket.IO** — Real-time bidirectional communication
-* **JWT** — Authentication
-* **bcrypt** — Password hashing
-* **Cookie Parser** — Cookie handling
-* **Validator.js** — Input validation
-* **dotenv** — Environment configuration
-* **Nodemon** *(Development)* — Automatic server restart
-
----
-
-## ✨ Features
-
-* User authentication (Signup, Login, Logout)
-* JWT-based authentication and authorization
-* User profile management
-* Developer feed
-* Send, review, and remove connection requests
-* View accepted connections
-* One-to-one real-time chat using Socket.IO
-* Persistent chat history
-* Chat list with latest message preview
-* REST APIs for chat history and user conversations
-* MongoDB-backed message persistence
-
----
-
-## ⚙️ Installation & Setup
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/your-username/devtinder.git
-cd devtinder
+```text
+Client → Express API → Middleware → Controllers → Mongoose → MongoDB
 ```
 
-### 2. Install dependencies
+```text
+Client ↔ Socket.IO → Socket Handlers → Mongoose → MongoDB
+```
+
+## Authentication
+
+```text
+Login → Validate credentials → Generate JWT → Set httpOnly cookie
+Protected request → Auth middleware → Verify JWT → Attach user
+```
+
+## API Documentation
+
+Detailed API endpoints and Socket.IO events are documented in the [API Reference](./apiList.md).
+
+## Database
+
+### Chat
+
+```text
+Chat
+├── roomId
+├── participants
+├── lastMessage
+├── lastMessageAt
+└── lastReadBy    // { userId: timestamp }
+```
+
+### Message
+
+```text
+Message
+├── senderId
+├── chatId
+├── text
+└── createdAt
+```
+
+## Real-Time Communication
+
+- Authenticated sockets join a personal room (`user:<id>`) for real-time connection request events.
+- The active conversation uses a screen-scoped room for live message delivery.
+- Read state is tracked per participant using atomic MongoDB `$set` updates on `lastReadBy`.
+
+## Environment Variables
+
+```env
+PORT=3000
+MONGODB_URI=<mongodb-url>
+JWT_SECRET=<jwt-secret>
+CLOUDINARY_CLOUD_NAME=<cloud-name>
+CLOUDINARY_API_KEY=<api-key>
+CLOUDINARY_API_SECRET=<api-secret>
+```
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js
+- MongoDB
+
+### Installation
 
 ```bash
+git clone https://github.com/himanshu-mawari/Devtinder.git
+cd Devtinder
 npm install
 ```
 
-### 3. Configure environment variables
+## Running Locally
 
-Create a `.env` file and add the required environment variables.
-
-```bash
-PORT=2006
-
-MONGO_URI=
-
-JWT_SECRET=
-```
-### 4. Run the development server
+Development (with nodemon, auto-restart on changes):
 
 ```bash
 npm run dev
 ```
 
-The server will start at:
+Production:
 
-```text
-http://localhost:3000
+```bash
+npm start
 ```
 
----
+## Related Repository
 
-## 📁 API Documentation
-
-Complete API reference is available in:
-
-👉 [apiList.md](./apiList.md)
+Frontend: [DevTinder — Frontend](https://github.com/himanshu-mawari/devtinder-frontend)
