@@ -76,9 +76,11 @@ Message
 PORT=3000
 MONGODB_URI=<mongodb-url>
 JWT_SECRET=<jwt-secret>
-CLOUDINARY_CLOUD_NAME=<cloud-name>
-CLOUDINARY_API_KEY=<api-key>
-CLOUDINARY_API_SECRET=<api-secret>
+CLOUD_NAME=<cloud-name>
+CLOUD_API_KEY=<api-key>
+CLOUD_API_SECRET=<api-secret>
+NODE_ENV=development
+FRONTEND_URL:http://localhost:5173
 ```
 
 ## Getting Started
@@ -113,3 +115,7 @@ npm start
 ## Related Repository
 
 Frontend: [DevTinder — Frontend](https://github.com/himanshu-mawari/devtinder-frontend)
+
+## Deployment
+
+Live demo: https://devtinder-himanshu.vercel.app
