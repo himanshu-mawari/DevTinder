@@ -4,12 +4,12 @@ REST and real-time API for DevTinder, a developer-matching platform with live ch
 
 ## Features
 
-* JWT-based authentication with httpOnly cookies
-* Developer discovery feed with page-based pagination
-* Connection requests with real-time request and acceptance events
-* One-to-one real-time messaging with cursor-based message history pagination
-* Per-user read tracking for chat messages
-* Real-time communication via Socket.IO
+- JWT-based authentication with httpOnly cookies
+- Developer discovery feed with page-based pagination
+- Connection requests with real-time request and acceptance events
+- One-to-one real-time messaging with cursor-based message history pagination
+- Per-user read tracking for chat messages
+- Real-time communication via Socket.IO
 
 ## Tech Stack
 
@@ -118,4 +118,4 @@ Frontend: [DevTinder — Frontend](https://github.com/himanshu-mawari/devtinder-
 
 ## Deployment
 
-Live demo: https://devtinder-himanshu.vercel.app
+Live API: https://devtinder-himanshu-api.onrender.com
