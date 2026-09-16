@@ -24,7 +24,10 @@ authRouter.post("/signup", async (req, res, next) => {
     const savedUser = await user.save();
     const token = await savedUser.getJWT();
     res.cookie("token", token, {
-      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     res.send(savedUser);
@@ -50,7 +53,10 @@ authRouter.post("/login", async (req, res, next) => {
     } else {
       const token = await user.getJWT();
       res.cookie("token", token, {
-        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       res.json({
         message: "Logged in successfully",
@@ -64,7 +70,11 @@ authRouter.post("/login", async (req, res, next) => {
 
 authRouter.post("/logout", async (req, res, next) => {
   try {
-    res.clearCookie("token", null, { expires: Date.now() });
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
     res.json("logout successfully!");
   } catch (err) {
     next(err);
